@@ -15,46 +15,11 @@ The recommended way to is via Composer:
 composer require surda/webloader-jm
 ```
 
-## Example
-
-Control factory in Nette presenter:
-
-```php
-protected function createComponentCss()
-{
-	$files = new WebLoader\FileCollection(WWW_DIR . '/css');
-	$files->addFiles(array(
-		'style.css',
-		WWW_DIR . '/colorbox/colorbox.css',
-	));
-
-	$files->addWatchFiles(Finder::findFiles('*.css', '*.less')->in(WWW_DIR . '/css'));
-
-	$compiler = WebLoader\Compiler::createCssCompiler($files, WWW_DIR . '/temp');
-
-	$compiler->addFilter(new WebLoader\Filter\VariablesFilter(array('foo' => 'bar')));
-	$compiler->addFilter(function ($code) {
-		return cssmin::minify($code, "remove-last-semicolon");
-	});
-
-	$control = new WebLoader\Nette\CssLoader($compiler, '/webtemp');
-	$control->setMedia('screen');
-
-	return $control;
-}
-```
-
-Template:
-
-```html
-{control css}
-```
-
 ## Example with Nette Framework extension used
 
-Configuration in `app/config/config.neon`:
+Configuration in `config.neon`:
 
-```html
+```yaml
 extensions:
 	webloader: WebLoader\Nette\Extension
 
@@ -88,16 +53,11 @@ webloader:
 				- web.js
 ```
 
-For older versions of Nette, you have to register the extension in `app/bootstrap.php`:
+Usage in presenter:
 
 ```php
-$webloaderExtension = new \WebLoader\Nette\Extension();
-$webloaderExtension->install($configurator);
-```
-
-Usage in `app/presenters/BasePresenter.php`:
-
-```php
+class BasePresenter extends Presenter
+{
 	/** @var \WebLoader\Nette\LoaderFactory @inject */
 	public $webLoader;
 
@@ -112,12 +72,47 @@ Usage in `app/presenters/BasePresenter.php`:
 	{
 		return $this->webLoader->createJavaScriptLoader('default');
 	}
+}
 ```
-
 
 Template:
 
 ```html
 {control css}
 {control js}
+```
+
+## Example
+
+Control factory in Nette presenter:
+
+```php
+protected function createComponentCss()
+{
+	$files = new WebLoader\FileCollection(WWW_DIR . '/css');
+	$files->addFiles(array(
+		'style.css',
+		WWW_DIR . '/colorbox/colorbox.css',
+	));
+
+	$files->addWatchFiles(Finder::findFiles('*.css', '*.less')->in(WWW_DIR . '/css'));
+
+	$compiler = WebLoader\Compiler::createCssCompiler($files, WWW_DIR . '/temp');
+
+	$compiler->addFilter(new WebLoader\Filter\VariablesFilter(array('foo' => 'bar')));
+	$compiler->addFilter(function ($code) {
+		return cssmin::minify($code, "remove-last-semicolon");
+	});
+
+	$control = new WebLoader\Nette\CssLoader($compiler, '/webtemp');
+	$control->setMedia('screen');
+
+	return $control;
+}
+```
+
+Template:
+
+```html
+{control css}
 ```
